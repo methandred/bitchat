@@ -15,10 +15,11 @@ import CommonCrypto
 import UIKit
 #endif
 
-class ChatViewModel: ObservableObject {
-    @Published var messages: [BitchatMessage] = []
-    @Published var connectedPeers: [String] = []
-    @Published var nickname: String = "" {
+@Observable
+class ChatViewModel {
+    var messages: [BitchatMessage] = []
+    var connectedPeers: [String] = []
+    var nickname: String = "" {
         didSet {
             nicknameSaveTimer?.invalidate()
             nicknameSaveTimer = Timer.scheduledTimer(withTimeInterval: 0.5, repeats: false) { _ in
@@ -26,30 +27,30 @@ class ChatViewModel: ObservableObject {
             }
         }
     }
-    @Published var isConnected = false
-    @Published var privateChats: [String: [BitchatMessage]] = [:] // peerID -> messages
-    @Published var selectedPrivateChatPeer: String? = nil
-    @Published var unreadPrivateMessages: Set<String> = []
-    @Published var autocompleteSuggestions: [String] = []
-    @Published var showAutocomplete: Bool = false
-    @Published var autocompleteRange: NSRange? = nil
-    @Published var selectedAutocompleteIndex: Int = 0
+    var isConnected = false
+    var privateChats: [String: [BitchatMessage]] = [:] // peerID -> messages
+    var selectedPrivateChatPeer: String? = nil
+    var unreadPrivateMessages: Set<String> = []
+    var autocompleteSuggestions: [String] = []
+    var showAutocomplete: Bool = false
+    var autocompleteRange: NSRange? = nil
+    var selectedAutocompleteIndex: Int = 0
     
     // Channel support
-    @Published var joinedChannels: Set<String> = []  // Set of channel hashtags
-    @Published var currentChannel: String? = nil  // Currently selected channel
-    @Published var channelMessages: [String: [BitchatMessage]] = [:]  // channel -> messages
-    @Published var unreadChannelMessages: [String: Int] = [:]  // channel -> unread count
-    @Published var channelMembers: [String: Set<String>] = [:]  // channel -> set of peer IDs who have sent messages
-    @Published var channelPasswords: [String: String] = [:]  // channel -> password (stored locally only)
-    @Published var channelKeys: [String: SymmetricKey] = [:]  // channel -> derived encryption key
-    @Published var passwordProtectedChannels: Set<String> = []  // Set of channels that require passwords
-    @Published var channelCreators: [String: String] = [:]  // channel -> creator peerID
-    @Published var channelKeyCommitments: [String: String] = [:]  // channel -> SHA256(derivedKey) for verification
-    @Published var showPasswordPrompt: Bool = false
-    @Published var passwordPromptChannel: String? = nil
-    @Published var savedChannels: Set<String> = []  // Channels saved for message retention
-    @Published var retentionEnabledChannels: Set<String> = []  // Channels where owner enabled retention for all members
+    var joinedChannels: Set<String> = []  // Set of channel hashtags
+    var currentChannel: String? = nil  // Currently selected channel
+    var channelMessages: [String: [BitchatMessage]] = [:]  // channel -> messages
+    var unreadChannelMessages: [String: Int] = [:]  // channel -> unread count
+    var channelMembers: [String: Set<String>] = [:]  // channel -> set of peer IDs who have sent messages
+    var channelPasswords: [String: String] = [:]  // channel -> password (stored locally only)
+    var channelKeys: [String: SymmetricKey] = [:]  // channel -> derived encryption key
+    var passwordProtectedChannels: Set<String> = []  // Set of channels that require passwords
+    var channelCreators: [String: String] = [:]  // channel -> creator peerID
+    var channelKeyCommitments: [String: String] = [:]  // channel -> SHA256(derivedKey) for verification
+    var showPasswordPrompt: Bool = false
+    var passwordPromptChannel: String? = nil
+    var savedChannels: Set<String> = []  // Channels saved for message retention
+    var retentionEnabledChannels: Set<String> = []  // Channels where owner enabled retention for all members
     
     let meshService = BluetoothMeshService()
     private let userDefaults = UserDefaults.standard
@@ -64,7 +65,7 @@ class ChatViewModel: ObservableObject {
     private let blockedUsersKey = "bitchat.blockedUsers"
     private var nicknameSaveTimer: Timer?
     
-    @Published var favoritePeers: Set<String> = []  // Now stores public key fingerprints instead of peer IDs
+    var favoritePeers: Set<String> = []  // Now stores public key fingerprints instead of peer IDs
     private var peerIDToPublicKeyFingerprint: [String: String] = [:]  // Maps ephemeral peer IDs to persistent fingerprints
     private var blockedUsers: Set<String> = []  // Stores public key fingerprints of blocked users
     
@@ -959,9 +960,6 @@ class ChatViewModel: ObservableObject {
         let isFavorite = isFavorite(peerID: peerID)
         DeliveryTracker.shared.trackMessage(message, recipientID: peerID, recipientNickname: recipientNickname, isFavorite: isFavorite)
         
-        // Trigger UI update
-        objectWillChange.send()
-        
         // Send via mesh with the same message ID
         meshService.sendPrivateMessage(content, to: peerID, recipientNickname: recipientNickname, messageID: message.id)
     }
@@ -1278,10 +1276,6 @@ class ChatViewModel: ObservableObject {
         
         // Force immediate UserDefaults synchronization
         userDefaults.synchronize()
-        
-        // Force UI update
-        objectWillChange.send()
-        
     }
     
     
@@ -1705,13 +1699,11 @@ class ChatViewModel: ObservableObject {
 }
 
 extension ChatViewModel: BitchatDelegate {
+    
     func didReceiveChannelLeave(_ channel: String, from peerID: String) {
         // Remove peer from channel members
         if channelMembers[channel] != nil {
             channelMembers[channel]?.remove(peerID)
-            
-            // Force UI update
-            objectWillChange.send()
         }
     }
     
@@ -2565,9 +2557,6 @@ extension ChatViewModel: BitchatDelegate {
                 // Sort messages by timestamp to ensure proper ordering
                 privateChats[peerID]?.sort { $0.timestamp < $1.timestamp }
                 
-                // Trigger UI update for private chats
-                objectWillChange.send()
-                
                 // Mark as unread if not currently viewing this chat
                 if selectedPrivateChatPeer != peerID {
                     unreadPrivateMessages.insert(peerID)
@@ -2911,9 +2900,6 @@ extension ChatViewModel: BitchatDelegate {
             originalSender: nil
         )
         messages.append(systemMessage)
-        
-        // Force UI update
-        objectWillChange.send()
     }
     
     func didDisconnectFromPeer(_ peerID: String) {
@@ -2925,9 +2911,6 @@ extension ChatViewModel: BitchatDelegate {
             originalSender: nil
         )
         messages.append(systemMessage)
-        
-        // Force UI update
-        objectWillChange.send()
     }
     
     func didUpdatePeerList(_ peers: [String]) {
@@ -2945,9 +2928,6 @@ extension ChatViewModel: BitchatDelegate {
                 channelMembers[channel] = activeMembers
             }
         }
-        
-        // Force UI update
-        objectWillChange.send()
         
         // If we're in a private chat with someone who disconnected, exit the chat
         if let currentChatPeer = selectedPrivateChatPeer,
@@ -3041,7 +3021,6 @@ extension ChatViewModel: BitchatDelegate {
         DispatchQueue.main.async { [weak self] in
             guard let self = self else { return }
             self.privateChats = updatedPrivateChats
-            self.objectWillChange.send()
         }
         
         // Update in channel messages
@@ -3053,11 +3032,6 @@ extension ChatViewModel: BitchatDelegate {
                     updatedMessage.deliveryStatus = status
                     channelMsgs[index] = updatedMessage
                     channelMessages[channel] = channelMsgs
-                    
-                    // Force UI update
-                    DispatchQueue.main.async { [weak self] in
-                        self?.objectWillChange.send()
-                    }
                 }
             }
         }

@@ -9,7 +9,7 @@
 import SwiftUI
 
 struct ContentView: View {
-    @EnvironmentObject var viewModel: ChatViewModel
+    @Environment(ChatViewModel.self) var viewModel
     @State private var messageText = ""
     @State private var textFieldSelection: NSRange? = nil
     @FocusState private var isTextFieldFocused: Bool
@@ -168,6 +168,7 @@ struct ContentView: View {
     
     private var headerView: some View {
         HStack {
+            @Bindable var viewModel = viewModel
             if let privatePeerID = viewModel.selectedPrivateChatPeer,
                let privatePeerNick = viewModel.meshService.getPeerNicknames()[privatePeerID] {
                 // Private chat header
