@@ -1,7 +1,63 @@
-![ChatGPT Image Jul 5, 2025 at 06_07_31 PM](https://github.com/user-attachments/assets/2660f828-49c7-444d-beca-d8b01854667a)
-# bitchat
+# BitChat: Now with Extra Bits of Security™
 
-A secure, decentralized, peer-to-peer messaging app that works over Bluetooth mesh networks. No internet required, no servers, no phone numbers - just pure encrypted communication.
+**The original BitChat, but we flipped all the security bits from 0 to 1**
+
+**Author**: Lance James, Unit 221B  
+**Contact**: lancejames@unit221b.com
+
+## IMPORTANT SECURITY NOTICE
+
+This is a security-hardened fork of the original BitChat application. We took BitChat and added a few more bits - specifically, the security bits that were missing. During our audit, we found the app was transmitting security in cleartext (aka not at all). This fork implements essential fixes because every bit counts, especially the secure ones.
+
+**See [SECURITY_DISCLOSURE.md](SECURITY_DISCLOSURE.md) for full vulnerability details.**
+
+**🔗 Our Pull Request with Fixes**: https://github.com/jackjackbits/bitchat/pull/77
+
+## Why This Fork Exists
+
+The original BitChat, while innovative in concept, contains several critical security flaws:
+
+- **No Bluetooth Authentication**: Automatic connection to any device advertising the service UUID
+- **Insecure Key Storage**: Private keys stored in UserDefaults instead of Keychain
+- **Buffer Overflows**: Multiple unchecked array operations causing crashes
+- **No Session Management**: Complete absence of authentication enabling impersonation
+- **Weak Peer IDs**: Only 32-bit entropy allowing collision attacks
+- **Extended Replay Window**: 5-minute window for message replay attacks
+
+This fork addresses ALL of these vulnerabilities to create a truly secure messaging platform.
+
+## Security Improvements Implemented
+
+### 1. Bluetooth Authentication (FIXED)
+- ✅ Added device pairing with PIN verification
+- ✅ Implemented mutual authentication protocol
+- ✅ User confirmation required before connections
+- ✅ Identity verification during key exchange
+
+### 2. Secure Key Storage (FIXED)
+- ✅ Moved all keys to iOS Keychain
+- ✅ Hardware encryption with Secure Enclave
+- ✅ Biometric authentication for key access
+- ✅ Automatic key rotation mechanism
+
+### 3. Protocol Security (FIXED)
+- ✅ Comprehensive bounds checking
+- ✅ Safe parsing with length validation
+- ✅ Graceful error handling
+- ✅ Protocol fuzzing tests
+
+### 4. Session Management (NEW)
+- ✅ Secure session establishment
+- ✅ Message authentication codes (MAC)
+- ✅ Anti-replay sequence numbers
+- ✅ Session timeout and renewal
+
+### 5. Enhanced Security (NEW)
+- ✅ 256-bit peer IDs (was 32-bit)
+- ✅ 30-second replay window (was 5 minutes)
+- ✅ Rate limiting (10 msg/sec per peer)
+- ✅ Connection throttling (max 50 peers)
+- ✅ Automatic resource cleanup
 
 ## License
 
@@ -154,3 +210,48 @@ The protocol is designed to be platform-agnostic. An Android client can be built
 - Bluetooth LE APIs
 - Same packet structure and encryption
 - Compatible service/characteristic UUIDs
+
+## Community Contribution
+
+We discovered these vulnerabilities and immediately created a PR with comprehensive security patches to help the community. This security-hardened fork implements all the necessary fixes to create a truly secure messaging platform.
+
+**🔗 Pull Request**: https://github.com/jackjackbits/bitchat/pull/77
+
+## Security Recommendations
+
+### For Users
+- **DO NOT use the original BitChat** for sensitive communications
+- Use this security-hardened fork instead
+- Enable iOS passcode/biometric authentication
+- Keep your device updated with latest iOS security patches
+- Be cautious of devices within Bluetooth range
+
+### For Developers
+- Review our security fixes and implement similar protections
+- Conduct regular security audits
+- Implement defense-in-depth strategies
+- Follow secure coding practices
+
+## Contributing
+
+Security is our top priority. If you discover any vulnerabilities:
+1. **DO NOT** open a public issue
+2. Email security@unit221b.com with details
+3. We'll respond within 48 hours
+4. Responsible reporters will be credited
+
+## Contact
+
+**Security Issues**: security@unit221b.com  
+**General Inquiries**: lancejames@unit221b.com  
+**Company**: Unit 221B
+
+## Acknowledgments
+
+- Original BitChat developers for the innovative concept
+- The iOS security community for best practices
+- Security researchers who helped verify our fixes
+
+---
+
+**⚠️ SECURITY WARNING**: The original BitChat (https://github.com/jackjackbits/bitchat) contains unpatched critical vulnerabilities. Use at your own risk.
