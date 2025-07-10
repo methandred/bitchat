@@ -7,9 +7,8 @@ workflows:
       app_store_connect: codemagic
     environment:
       ios_signing:
-  distribution_type: development
-  bundle_identifier: "com.yourname.*"
-
+       distribution_type: development
+       bundle_identifier: "com.yourname.*"
       vars:
         BUNDLE_ID: "social.bitkit.bitchat"
         XCODE_PROJECT: "BitChat.xcodeproj"         # BitChat — это Xcode project, не workspace
